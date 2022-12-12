@@ -19,6 +19,7 @@
 </head>
 <body>
   <h1>SVG Update Demo</h1>
+  <div class="monitor">
   <svg viewBox="-5 -5 90 70" class="showBox">
     <!-- The viewBox should contain the 'ground' and 'object' defined below. -->
     <!-- We assume the 'ground' start at (0,0), 80 in width and 60 in height. -->
@@ -61,6 +62,20 @@
       <circle cx="0" cy="0" r="0.5" fill="red" />
     </g>
   </svg>
+  </div>
+  <div class="monitorControl">
+    <p>Time interval: 
+      <input 
+        type="text"
+        id="interval"
+        value="30"
+        size="10"
+        spellcheck="false"
+        title="Set time interval between each query." />
+      ms.</p>
+    <button id="start">Start</button>
+    <button id="stop">Stop</button>
+  </div>
   <script>
     // Mock function of getting current position.
     // Return in a colon-seperated format, e.g. '15;34;90' ({x};{y};{deg}).
@@ -77,10 +92,7 @@
     // getting arrow element
     const arrow = document.getElementById('object');
 
-    // 'setInterval' is used for repetitive queries;
-    // (here we use a lambda instead of a named function for the hook function)
-    setInterval(() => {
-
+    function updateArrowPos() {
       // getting position
       const s = getPos();
 
@@ -94,7 +106,32 @@
       // modifing arrtibute for the 'arrow':
       // first translate the object, then rotate (0 ~ 360 degree)
       arrow.setAttribute('transform', `translate(${x} ${y}) rotate(${d})`);
-    }, 30); // interval is set to 30 ms (which is about 30 fps).
+    }
+    
+    // Here we 'setInterval' use for repetitive queries;
+    // There might be other ways: instead of keeping querying seperately,
+    // the broswer (user) can open a socket and keep listening to receive data.
+
+    // variable to store our intervalID
+    let nIntervId;
+
+    const interval = document.getElementById('interval');
+
+    function startMonitoring() {
+      // check if an interval has already been set up
+      if (!nIntervId) {
+        nIntervId = setInterval(updateArrowPos, Number(interval.value));  // interval is set to 30 ms (which is about 30 fps).
+      }
+    }
+
+    function stopMonitoring() {
+      clearInterval(nIntervId);
+      // release our intervalID from the variable
+      nIntervId = null;
+    }
+
+    document.getElementById("start").addEventListener("click", startMonitoring);
+    document.getElementById("stop").addEventListener("click", stopMonitoring);
   </script>
 </body>
 </html>
