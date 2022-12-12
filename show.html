@@ -22,28 +22,33 @@
   <div class="monitor">
   <svg viewBox="-5 -5 90 70" class="showBox">
     <!-- The viewBox should contain the 'ground' and 'object' defined below. -->
-    <!-- We assume the 'ground' start at (0,0), 80 in width and 60 in height. -->
-    <!-- Thus the viewbox is "-5 -5 80+5*2 60+5*2", leaving us a margin of 5. -->
-    <defs> <!-- Some predefine -->
-      <!-- Using pattern for showing grid. -->
+    <!-- We assume the 'ground' start at (0,0), which is 80 in width and 60 in height. -->
+    <!-- Then the viewbox could be "-5 -5 90 70", leaving us a margin of 5. -->
+    <defs> <!-- Some pre-defined graphical objects: -->
+      <!-- Using pattern fill for grid showing: -->
+      <!-- smaller grid: size 2x2 -->
       <pattern id="smallGrid" width="2" height="2" patternUnits="userSpaceOnUse">
-        <path d="M 10 0 L 0 0 0 10"/>
+        <rect width="100%" height="100%" stroke-width="0.1" />
       </pattern>
+      <!-- bigger grid: size 10x10 -->
       <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
-        <rect width="100" height="100" fill="url(#smallGrid)"/>
-        <path d="M 100 0 L 0 0 0 100"/>
+        <rect width="100%" height="100%" stroke-width="0.3" fill="url(#smallGrid)"/>
       </pattern>
-      <!-- Styling the grid and the ground. -->
+      <g id="arrowShape"> <!-- We later use 'transform' attribute to update position of this object. -->
+        <!-- The 'path' describe the shape of the object, which is an arrow. --> 
+        <!-- The path is defined as if its center is at (0, 0). Altogether the shape is of a 6x6 size.--> 
+        <path d="M 0,1 3,3 0,-3 -3,3 z" />
+        <!-- The circle indicates the center. which is at (0, 0). --> 
+        <circle cx="0" cy="0" r="0.5" fill="black"/>
+      </g>
+      <!-- Styling for the 'grid' and the 'ground'. -->
       <style>
-        #smallGrid path {
+        #smallGrid rect {
           stroke: lightseagreen;
-          stroke-width: 0.2;
           fill: none;
         }
-        #grid path {
+        #grid rect {
           stroke: lightseagreen;
-          stroke-width: 0.5;
-          fill: none;
         }
         rect#ground {
           stroke: lightseagreen;
@@ -52,14 +57,11 @@
         }
       </style>
     </defs>
-    <!-- The 'rect' descibe the imaginary ground. -->
+    <!-- The 'rect' descibe the imaginary ground. Size: 80 x 60 -->
     <rect id="ground" x="0" y="0" width="80" height="60" />
-    <g id="object"> <!-- We later use 'transform' attribute to update position of this object. -->
-      <!-- The 'path' describe the shape of the object, which is an arrow. --> 
-      <!-- When defining the path, we assume its center is at (0, 0). Altogether the shape is of a 6x6 size.--> 
-      <path d="M 0,1 3,3 0,-3 -3,3 z" fill="black"/>
-      <!-- The circle describe the center. which is at (0, 0). --> 
-      <circle cx="0" cy="0" r="0.5" fill="red" />
+    <g class="object">
+      <use x="0" y="0" xlink:href="#arrowShape" id="arrow1"/>
+      <text x="3" y="3" font-size="2px" id="text1">Object 1</text>
     </g>
   </svg>
   </div>
@@ -88,17 +90,22 @@
       const y = 30 - Math.cos(2 * Math.PI * t) * r;
       return `${x};${y};${90 + t * 360}`
     }
-    
+
     // getting arrow element
-    const arrow = document.getElementById('object');
+    const arrow = document.getElementById('arrow1');
+    const text = document.getElementById('text1');
+
+    // setting arrow color
+    arrow.setAttribute('fill', 'orange');
+    text.setAttribute('fill', 'orange');
 
     function updateArrowPos() {
-      // getting position
-      const s = getPos();
+      // getting pos data
+      const pos = getPos();
 
       // parsing translate amount of x, y and deg rotated;
       // since we started from (0, 0), x and y translate is same as absolute ones.
-      let l = s.split(';');
+      let l = pos.split(';');
       const x = Number(l[0]);
       const y = Number(l[1]);
       const d = Number(l[2]);
@@ -106,6 +113,7 @@
       // modifing arrtibute for the 'arrow':
       // first translate the object, then rotate (0 ~ 360 degree)
       arrow.setAttribute('transform', `translate(${x} ${y}) rotate(${d})`);
+      text.setAttribute('transform', `translate(${x} ${y})`);
     }
     
     // Here we 'setInterval' use for repetitive queries;
@@ -115,12 +123,14 @@
     // variable to store our intervalID
     let nIntervId;
 
-    const interval = document.getElementById('interval');
+    // getting interval time input element
+    const intervalTime = document.getElementById('interval');
 
     function startMonitoring() {
       // check if an interval has already been set up
       if (!nIntervId) {
-        nIntervId = setInterval(updateArrowPos, Number(interval.value));  // interval is set to 30 ms (which is about 30 fps).
+        // interval is set to 30 ms (which is about 30 fps).
+        nIntervId = setInterval(updateArrowPos, Number(intervalTime.value));
       }
     }
 
